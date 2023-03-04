@@ -1,8 +1,15 @@
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-core');
 
 (async () => {
   // Create a browser instance
-  const browser = await puppeteer.launch();
+  console.log("launching chromium...")
+  const browser = await puppeteer.launch({
+    headless: true,
+    executablePath: '/usr/bin/chromium-browser',
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
+  });
+
+  console.log("opening page...")
 
   // Create a new page
   const page = await browser.newPage();
@@ -15,6 +22,7 @@ const puppeteer = require('puppeteer');
   // Open URL in current page
   await page.goto(website_url, { waitUntil: 'networkidle0' });
 
+  console.log("saving screenshot to screenshot.jpg...")
   // Capture screenshot
   await page.screenshot({
     path: 'screenshot.jpg',
