@@ -27,7 +27,7 @@ def get_timestamp_str():
     return str_datetime
 
 #screencap_path = os.path.join(picdir, 'screen_capture.png')
-screencap_path = os.path.join('screenshot.png')
+screencap_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screenshot.png')
 if os.path.exists(screencap_path) == False:
     logging.error(f"{screencap_path} not found, is nfs share mounted?")
     exit()
@@ -40,7 +40,7 @@ try:
     epd.init()
     epd.Clear()
 
-    logging.info("Display screen_capture.png")
+    logging.info(f"Displaying {screencap_path}")
     Himage = Image.open(screencap_path)
     draw = ImageDraw.Draw(Himage)
     timestamp_text = get_timestamp_str()

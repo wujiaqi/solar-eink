@@ -2,32 +2,37 @@ const puppeteer = require('puppeteer-core');
 
 (async () => {
   // Create a browser instance
-  console.log("launching chromium...")
+  console.log("launching chromium...");
   const browser = await puppeteer.launch({
     headless: true,
     executablePath: '/usr/bin/chromium-browser',
     args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
 
-  console.log("opening page...")
+  try {
 
-  // Create a new page
-  const page = await browser.newPage();
+    console.log("opening page...");
 
-  // Set viewport width and height
-  await page.setViewport({ width: 800, height: 480 });
+    // Create a new page
+    const page = await browser.newPage();
 
-  const website_url = 'http://jiaqi-desktop.local:3000/d/sPcihT2Vk/solar-e-ink?orgId=1&kiosk';
+    // Set viewport width and height
+    await page.setViewport({ width: 800, height: 480 });
 
-  // Open URL in current page
-  await page.goto(website_url, { waitUntil: 'networkidle0' });
+    const website_url = 'http://jiaqi-desktop.local:3000/d/sPcihT2Vk/solar-e-ink?orgId=1&kiosk';
 
-  console.log("saving screenshot to screenshot.png...")
-  // Capture screenshot
-  await page.screenshot({
-    path: 'screenshot.png',
-  });
+    // Open URL in current page
+    await page.goto(website_url, { waitUntil: 'networkidle0' });
 
-  // Close the browser instance
-  await browser.close();
+    console.log("saving screenshot to screenshot.png...");
+    // Capture screenshot
+    await page.screenshot({
+      path: 'screenshot.png',
+    });
+  } catch (e) {
+    console.log(e);
+  } finally {
+    // Close the browser instance
+    await browser.close();
+  }
 })();
