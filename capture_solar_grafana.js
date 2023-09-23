@@ -17,9 +17,9 @@ const puppeteer = require('puppeteer-core');
     const page = await browser.newPage();
 
     // Set viewport width and height
-    await page.setViewport({ width: 800, height: 480 });
+    await page.setViewport({ width: 1872, height: 1404, deviceScaleFactor: 3 });
 
-    const website_url = 'http://jiaqi-desktop.local:3000/d/sPcihT2Vk/solar-e-ink?orgId=1&kiosk';
+    const website_url = 'https://grafana.jiaqiwu.io/d/uxVUaO2Vz/solar?orgId=1&refresh=5s&kiosk';
 
     // Open URL in current page
     await page.goto(website_url, { waitUntil: 'networkidle0' });
