@@ -8,9 +8,12 @@ const commander = require('commander');
     .usage('[OPTIONS]...')
     .option('-h, --height <value>', 'window height', 600)
     .option('-w, --width <value>', 'window width', 800)
+    .option('-u, --url <value>', 'url')
     .parse(process.argv);
 
   const options = commander.opts();
+  console.log(options.width)
+  console.log(options.height)
   // Create a browser instance
   console.log("launching chromium...");
   const browser = await puppeteer.launch({
@@ -27,9 +30,9 @@ const commander = require('commander');
     const page = await browser.newPage();
 
     // Set viewport width and height
-    await page.setViewport({ width: options.width, height: options.height, deviceScaleFactor: 1 });
+    await page.setViewport({ width: parseInt(options.width), height: parseInt(options.height), deviceScaleFactor: 1 });
 
-    const website_url = 'https://grafana.jiaqiwu.io/d/uxVUaO2Vz/solar?orgId=1&refresh=5s&kiosk';
+    const website_url = options.url;
 
     // Open URL in current page
     await page.goto(website_url, { waitUntil: 'networkidle0' });
