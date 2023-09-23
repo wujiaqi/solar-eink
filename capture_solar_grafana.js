@@ -1,6 +1,16 @@
+
 const puppeteer = require('puppeteer-core');
+const commander = require('commander');
 
 (async () => {
+  commander
+    .version('1.0.0', '-v, --version')
+    .usage('[OPTIONS]...')
+    .option('-h, --height <value>', 'window height', 600)
+    .option('-w, --width <value>', 'window width', 800)
+    .parse(process.argv);
+
+  const options = commander.opts();
   // Create a browser instance
   console.log("launching chromium...");
   const browser = await puppeteer.launch({
@@ -17,7 +27,7 @@ const puppeteer = require('puppeteer-core');
     const page = await browser.newPage();
 
     // Set viewport width and height
-    await page.setViewport({ width: 1872, height: 1404, deviceScaleFactor: 3 });
+    await page.setViewport({ width: options.width, height: options.height, deviceScaleFactor: 1 });
 
     const website_url = 'https://grafana.jiaqiwu.io/d/uxVUaO2Vz/solar?orgId=1&refresh=5s&kiosk';
 
