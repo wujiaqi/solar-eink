@@ -74,6 +74,8 @@ def main():
     screencap_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screenshot.png')
     display_image_8bpp(display, screencap_path)
     print('Done!')
+    display.epd.standby()
+    print('Standby...')
 
 if __name__ == '__main__':
     main()
