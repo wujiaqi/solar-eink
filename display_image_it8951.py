@@ -27,8 +27,8 @@ def parse_args():
     p.add_argument('-t', '--height', type=int, required=True)
 
     group = p.add_mutually_exclusive_group(required=True)
-    group.add_argument('-u', '--url')
-    group.add_argument('-i' '--imgurl')
+    group.add_argument('--url')
+    group.add_argument('--imgurl')
     return p.parse_args()
 
 
@@ -99,10 +99,13 @@ def init_display(virtual, rotate, mirror):
 def fetch_image_from_page(url, width, height):
     return asyncio.get_event_loop().run_until_complete(capture_page.capture(url, width, height))
 
-def fetch_image_from_urlfile(url):
+def fetch_image_from_urlfile(url, resizeWidth, resizeHeight):
+    logging.info("Downloading image from {}".format(url))
     response = requests.get(url)
     response.raise_for_status()
-    return Image.open(io.BytesIO(response.content))
+    logging.info("Success")
+    image = Image.open(io.BytesIO(response.content))
+    return image.resize((resizeWidth, resizeHeight))
 
 def main():
     args = parse_args()
@@ -110,7 +113,7 @@ def main():
     if args.url:
         screenshot = fetch_image_from_page(args.url, args.width, args.height)
     elif args.imgurl:
-        screenshot = fetch_image_from_urlfile(args.imgurl)
+        screenshot = fetch_image_from_urlfile(args.imgurl, args.width, args.height)
 
     try:
         display = init_display(args.virtual, args.rotate, args.mirror)
