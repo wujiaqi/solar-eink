@@ -6,7 +6,7 @@ import IT8951
 import logging
 from IT8951 import constants
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 def parse_args():
