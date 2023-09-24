@@ -26,8 +26,10 @@ async def capture(url, width, height, path):
     await page.goto(url, options={
         'waitUntil': 'networkidle0',
     })
-    await page.screenshot({'path': path})
+    # await page.screenshot({'path': path})
+    screenshot = await page.screenshot({'encoding': 'base64'})
     await browser.close()
+    return screenshot
 
 def main():
     parser = argparse.ArgumentParser(description='Browser screencapture utility')
@@ -38,7 +40,8 @@ def main():
     # print(args.accumulate(args.integers))
     screencap_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screenshot_.png')
     print('capturing to path {}'.format(screencap_path))
-    asyncio.get_event_loop().run_until_complete(capture(args.url, args.width, args.height, screencap_path))
+    output = asyncio.get_event_loop().run_until_complete(capture(args.url, args.width, args.height, screencap_path))
+    print(output[0:10])
     print('Done')
 
 if __name__ == '__main__':
