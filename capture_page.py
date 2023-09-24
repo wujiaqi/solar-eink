@@ -6,7 +6,8 @@ from pyppeteer import launch
 
 async def capture(url, width, height, path):
     browser = await launch(options={
-        'headless': True
+        'headless': True,
+        'executablePath': '/usr/bin/chromium-browser'
     })
     page = await browser.newPage()
     await page.setViewport(viewport={
@@ -26,7 +27,7 @@ def main():
     parser.add_argument('-t', '--height', type=int, required=True)
     args = parser.parse_args()
     # print(args.accumulate(args.integers))
-    screencap_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screenshot.png')
+    screencap_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screenshot_.png')
     print('capturing to path {}'.format(screencap_path))
     asyncio.get_event_loop().run_until_complete(capture(args.url, args.width, args.height, screencap_path))
     print('Done')
