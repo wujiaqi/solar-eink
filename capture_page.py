@@ -9,7 +9,7 @@ import platform
 from pyppeteer import launch
 
 def get_chromium_path():
-    if sys.platform.startswith('linux') and platform.uname().machine.startswith('aarch'):
+    if sys.platform.startswith('linux') and (platform.uname().machine.startswith('aarch') or platform.uname().machine.startswith('armv')):
         return '/usr/bin/chromium-browser'
     elif sys.platform.startswith('darwin'):
         return '/opt/homebrew/bin/chromium'
@@ -27,6 +27,7 @@ async def capture(url, width, height):
     })
     await page.goto(url, options={
         'waitUntil': 'networkidle0',
+        'timeout': 60000
     })
     # await page.screenshot({'path': path})
     screenshot = await page.screenshot({'encoding': 'binary'})
