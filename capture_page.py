@@ -29,7 +29,7 @@ async def capture(url, width, height):
         'waitUntil': 'networkidle0',
     })
     # await page.screenshot({'path': path})
-    screenshot = await page.screenshot({'encoding': 'base64'})
+    screenshot = await page.screenshot({'encoding': 'binary'})
     image = Image.open(io.BytesIO(screenshot))
     await browser.close()
     return image
