@@ -3,7 +3,10 @@ from PIL import Image, ImageDraw, ImageFont
 import argparse
 import os
 import IT8951
+import logging
 from IT8951 import constants
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 def parse_args():
@@ -20,7 +23,7 @@ def parse_args():
 
 
 def display_image_8bpp(display, img_path):
-    print('Displaying "{}"...'.format(img_path))
+    logging.info('Displaying "{}"...'.format(img_path))
 
     # clearing image to white
     display.frame_buf.paste(0xFF, box=(0, 0, display.width, display.height))
@@ -40,43 +43,54 @@ def display_image_8bpp(display, img_path):
 def print_system_info(display):
     epd = display.epd
 
-    print('System info:')
-    print('  display size: {}x{}'.format(epd.width, epd.height))
-    print('  img buffer address: {:X}'.format(epd.img_buf_address))
-    print('  firmware version: {}'.format(epd.firmware_version))
-    print('  LUT version: {}'.format(epd.lut_version))
-    print()
+    logging.info('System info:')
+    logging.info('  display size: {}x{}'.format(epd.width, epd.height))
+    logging.info('  img buffer address: {:X}'.format(epd.img_buf_address))
+    logging.info('  firmware version: {}'.format(epd.firmware_version))
+    logging.info('  LUT version: {}'.format(epd.lut_version))
 
 def main():
 
     args = parse_args()
     tests = []
-    if not args.virtual:
-        from IT8951.display import AutoEPDDisplay
+    try:
+        if not args.virtual:
+            from IT8951.display import AutoEPDDisplay
 
-        print('Initializing EPD...')
+            logging.info('Initializing EPD...')
 
-        # here, spi_hz controls the rate of data transfer to the device, so a higher
-        # value means faster display refreshes. the documentation for the IT8951 device
-        # says the max is 24 MHz (24000000), but my device seems to still work as high as
-        # 80 MHz (80000000)
-        display = AutoEPDDisplay(vcom=-2.15, rotate=args.rotate, mirror=args.mirror, spi_hz=24000000)
+            # here, spi_hz controls the rate of data transfer to the device, so a higher
+            # value means faster display refreshes. the documentation for the IT8951 device
+            # says the max is 24 MHz (24000000), but my device seems to still work as high as
+            # 80 MHz (80000000)
+            display = AutoEPDDisplay(vcom=-2.15, rotate=args.rotate, mirror=args.mirror, spi_hz=24000000)
 
-        print('VCOM set to', display.epd.get_vcom())
+            logging.info('VCOM set to', display.epd.get_vcom())
 
-        tests += [print_system_info]
+            tests += [print_system_info]
 
-    else:
-        from IT8951.display import VirtualEPDDisplay
-        display = VirtualEPDDisplay(dims=(1872, 1404), rotate=args.rotate, mirror=args.mirror)
-    screencap_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screenshot.png')
-    if os.path.exists(screencap_path) == False:
-        logging.error(f"{screencap_path} not found, is nfs share mounted?")
+        else:
+            from IT8951.display import VirtualEPDDisplay
+            display = VirtualEPDDisplay(dims=(1872, 1404), rotate=args.rotate, mirror=args.mirror)
+        screencap_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screenshot.png')
+        if os.path.exists(screencap_path) == False:
+            logging.error(f"{screencap_path} not found, is nfs share mounted?")
+            exit()
+        display_image_8bpp(display, screencap_path)
+        logging.info('Done!')
+        display.epd.standby()
+        logging.info('Standby...')
+
+    except KeyboardInterrupt:    
+        logging.info("ctrl + c:")
+        display.epd.standby()
         exit()
-    display_image_8bpp(display, screencap_path)
-    print('Done!')
-    display.epd.standby()
-    print('Standby...')
+
+    except Exception as e:
+        logging.info(e)
+        display.epd.standby()
+        exit()
+
 
 if __name__ == '__main__':
     main()
