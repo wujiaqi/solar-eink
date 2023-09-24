@@ -1,14 +1,23 @@
 import asyncio
 import argparse
 import os
+import sys
+import platform
 
 from pyppeteer import launch
 
+def get_chromium_path():
+    if sys.platform.startswith('linux') and platform.uname().machine.startswith('armv'):
+        return '/usr/bin/chromium-browser'
+    elif sys.platform.startswith('darwin'):
+        return '/opt/homebrew/bin/chromium'
+
 async def capture(url, width, height, path):
-    browser = await launch(options={
+    browser_opts = {
         'headless': True,
-        'executablePath': '/usr/bin/chromium-browser'
-    })
+    }
+    browser_opts['executablePath'] = get_chromium_path()
+    browser = await launch(options=browser_opts)
     page = await browser.newPage()
     await page.setViewport(viewport={
         'width': width,
