@@ -70,33 +70,36 @@ def print_system_info(display):
     logging.info('  firmware version: {}'.format(epd.firmware_version))
     logging.info('  LUT version: {}'.format(epd.lut_version))
 
+def init_display(virtual):
+    if not args.virtual:
+        from IT8951.display import AutoEPDDisplay
+
+        logging.info('Initializing EPD...')
+
+        # here, spi_hz controls the rate of data transfer to the device, so a higher
+        # value means faster display refreshes. the documentation for the IT8951 device
+        # says the max is 24 MHz (24000000), but my device seems to still work as high as
+        # 80 MHz (80000000)
+        display = AutoEPDDisplay(vcom=-2.15, rotate=args.rotate, mirror=args.mirror, spi_hz=24000000)
+
+        logging.info('VCOM set to {}'.format(str(display.epd.get_vcom())))
+
+        print_system_info(display)
+
+    else:
+        from IT8951.display import VirtualEPDDisplay
+        display = VirtualEPDDisplay(dims=(1872, 1404), rotate=args.rotate, mirror=args.mirror)
+    return display
+    
+
 def main():
     args = parse_args()
     # screencap_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), args.output)
     screenshot = asyncio.get_event_loop().run_until_complete(capture_page.capture(args.url, args.width, args.height))
+    display = init_display(args.virtual)
 
     try:
-        if not args.virtual:
-            from IT8951.display import AutoEPDDisplay
-
-            logging.info('Initializing EPD...')
-
-            # here, spi_hz controls the rate of data transfer to the device, so a higher
-            # value means faster display refreshes. the documentation for the IT8951 device
-            # says the max is 24 MHz (24000000), but my device seems to still work as high as
-            # 80 MHz (80000000)
-            display = AutoEPDDisplay(vcom=-2.15, rotate=args.rotate, mirror=args.mirror, spi_hz=24000000)
-
-            logging.info('VCOM set to {}'.format(str(display.epd.get_vcom())))
-
-            print_system_info(display)
-
-        else:
-            from IT8951.display import VirtualEPDDisplay
-            display = VirtualEPDDisplay(dims=(1872, 1404), rotate=args.rotate, mirror=args.mirror)
-        # if os.path.exists(screencap_path) == False:
-        #     logging.error(f"{screencap_path} not found, is nfs share mounted?")
-        #     exit()
+        display = init_display(args.virtual)
         display_image(display, screenshot)
         logging.info('Done!')
         display.epd.standby()
