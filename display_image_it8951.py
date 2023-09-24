@@ -52,7 +52,6 @@ def print_system_info(display):
 def main():
 
     args = parse_args()
-    tests = []
     try:
         if not args.virtual:
             from IT8951.display import AutoEPDDisplay
@@ -65,9 +64,9 @@ def main():
             # 80 MHz (80000000)
             display = AutoEPDDisplay(vcom=-2.15, rotate=args.rotate, mirror=args.mirror, spi_hz=24000000)
 
-            logging.info('VCOM set to', display.epd.get_vcom())
+            logging.info('VCOM set to {}'.format(str(display.epd.get_vcom())))
 
-            tests += [print_system_info]
+            print_system_info(display)
 
         else:
             from IT8951.display import VirtualEPDDisplay
