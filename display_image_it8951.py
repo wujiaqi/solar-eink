@@ -50,9 +50,7 @@ def print_system_info(display):
 def main():
 
     args = parse_args()
-
     tests = []
-
     if not args.virtual:
         from IT8951.display import AutoEPDDisplay
 
@@ -72,6 +70,9 @@ def main():
         from IT8951.display import VirtualEPDDisplay
         display = VirtualEPDDisplay(dims=(1872, 1404), rotate=args.rotate, mirror=args.mirror)
     screencap_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screenshot.png')
+    if os.path.exists(screencap_path) == False:
+        logging.error(f"{screencap_path} not found, is nfs share mounted?")
+        exit()
     display_image_8bpp(display, screencap_path)
     print('Done!')
     display.epd.standby()

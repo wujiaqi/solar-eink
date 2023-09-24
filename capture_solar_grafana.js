@@ -12,8 +12,6 @@ const commander = require('commander');
     .parse(process.argv);
 
   const options = commander.opts();
-  console.log(options.width)
-  console.log(options.height)
   // Create a browser instance
   console.log("launching chromium...");
   const browser = await puppeteer.launch({
@@ -24,7 +22,7 @@ const commander = require('commander');
 
   try {
 
-    console.log("opening page...");
+    console.log("opening page " + options.url);
 
     // Create a new page
     const page = await browser.newPage();
@@ -35,7 +33,7 @@ const commander = require('commander');
     const website_url = options.url;
 
     // Open URL in current page
-    await page.goto(website_url, { waitUntil: 'networkidle0' });
+    await page.goto(website_url, { waitUntil: 'networkidle0', timeout: 60000 });
 
     console.log("saving screenshot to screenshot.png...");
     // Capture screenshot
