@@ -2,9 +2,11 @@ from time import sleep
 from PIL import Image, ImageDraw, ImageFont
 import argparse
 import os
+import io
 import IT8951
 import logging
 import asyncio
+import requests
 import capture_page
 from IT8951 import constants
 
@@ -21,10 +23,12 @@ def parse_args():
                    help='run the tests with the display rotated by the specified value')
     p.add_argument('-m', '--mirror', action='store_true',
                    help='Mirror the display (use this if text appears backwards)')
-    p.add_argument('-u', '--url', required=True)
     p.add_argument('-w', '--width', type=int, required=True)
     p.add_argument('-t', '--height', type=int, required=True)
-    p.add_argument('-o', '--output', default="screenshot.png")
+
+    group = p.add_mutually_exclusive_group(required=True)
+    group.add_argument('-u', '--url')
+    group.add_argument('-i' '--imgurl')
     return p.parse_args()
 
 
@@ -92,10 +96,21 @@ def init_display(virtual, rotate, mirror):
     return display
     
 
+def fetch_image_from_page(url, width, height):
+    return asyncio.get_event_loop().run_until_complete(capture_page.capture(url, width, height))
+
+def fetch_image_from_urlfile(url):
+    response = requests.get(url)
+    response.raise_for_status()
+    return Image.open(io.BytesIO(response.content))
+
 def main():
     args = parse_args()
     # screencap_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), args.output)
-    screenshot = asyncio.get_event_loop().run_until_complete(capture_page.capture(args.url, args.width, args.height))
+    if args.url:
+        screenshot = fetch_image_from_page(args.url, args.width, args.height)
+    elif args.imgurl:
+        screenshot = fetch_image_from_urlfile(args.imgurl)
 
     try:
         display = init_display(args.virtual, args.rotate, args.mirror)

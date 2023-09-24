@@ -1,24 +1,22 @@
 #!/usr/bin/python
 # -*- coding:utf-8 -*-
-import sys
-import os
-from datetime import datetime
-import time
-import asyncio
-import capture_page
 import argparse
+import asyncio
+import logging
+import os
+import sys
+import time
+import traceback
+from datetime import datetime
+
+import capture_page
+from PIL import Image, ImageDraw, ImageFont
+from waveshare_epd import epd7in5_V2
+
 fontdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'pic')
-picdir = "/mnt/nfs/eink"
 libdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib')
 if os.path.exists(libdir):
     sys.path.append(libdir)
-
-import logging
-from waveshare_epd import epd7in5_V2
-import time
-from PIL import Image, ImageDraw, ImageFont
-import traceback
-
 
 def parse_args():
     p = argparse.ArgumentParser(description='Test EPD functionality')

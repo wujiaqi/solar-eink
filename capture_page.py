@@ -1,12 +1,13 @@
-import asyncio
 import argparse
-import os
+import asyncio
 import io
-from PIL import Image
-import sys
+import os
 import platform
+import sys
 
+from PIL import Image
 from pyppeteer import launch
+
 
 def get_chromium_path():
     if sys.platform.startswith('linux') and (platform.uname().machine.startswith('aarch') or platform.uname().machine.startswith('armv')):
