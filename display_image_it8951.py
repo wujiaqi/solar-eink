@@ -1,5 +1,5 @@
 from time import sleep
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageOps
 import argparse
 import os
 import io
@@ -105,7 +105,7 @@ def fetch_image_from_urlfile(url, resizeWidth, resizeHeight):
     response.raise_for_status()
     logging.info("Success")
     image = Image.open(io.BytesIO(response.content))
-    return image.resize((resizeWidth, resizeHeight))
+    return ImageOps.contain(image, (resizeWidth, resizeHeight))
 
 def main():
     args = parse_args()
