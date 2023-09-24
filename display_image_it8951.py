@@ -70,8 +70,8 @@ def print_system_info(display):
     logging.info('  firmware version: {}'.format(epd.firmware_version))
     logging.info('  LUT version: {}'.format(epd.lut_version))
 
-def init_display(virtual):
-    if not args.virtual:
+def init_display(virtual, rotate, mirror):
+    if not virtual:
         from IT8951.display import AutoEPDDisplay
 
         logging.info('Initializing EPD...')
@@ -80,7 +80,7 @@ def init_display(virtual):
         # value means faster display refreshes. the documentation for the IT8951 device
         # says the max is 24 MHz (24000000), but my device seems to still work as high as
         # 80 MHz (80000000)
-        display = AutoEPDDisplay(vcom=-2.15, rotate=args.rotate, mirror=args.mirror, spi_hz=24000000)
+        display = AutoEPDDisplay(vcom=-2.15, rotate=rotate, mirror=mirror, spi_hz=24000000)
 
         logging.info('VCOM set to {}'.format(str(display.epd.get_vcom())))
 
@@ -96,10 +96,9 @@ def main():
     args = parse_args()
     # screencap_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), args.output)
     screenshot = asyncio.get_event_loop().run_until_complete(capture_page.capture(args.url, args.width, args.height))
-    display = init_display(args.virtual)
 
     try:
-        display = init_display(args.virtual)
+        display = init_display(args.virtual, args.rotate, args.mirror)
         display_image(display, screenshot)
         logging.info('Done!')
         display.epd.standby()
