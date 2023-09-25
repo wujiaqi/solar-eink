@@ -108,12 +108,12 @@ def _fetch_image_from_urlfile(url, resizeWidth, resizeHeight):
     return ImageOps.pad(image, (resizeWidth, resizeHeight), color=(255,255,255), centering=(0.5, 0.5))
 
 def do_webpage_display(url, width, height, virtual, rotate, mirror):
-    screenshot = _fetch_image_from_page(url, width, height)
-    _do_display(screenshot, virtual, rotate, mirror)
+    with _fetch_image_from_page(url, width, height) as screenshot:
+        _do_display(screenshot, virtual, rotate, mirror)
 
 def do_imgurl_display(imgurl, width, height, virtual, rotate, mirror):
-    screenshot = _fetch_image_from_urlfile(imgurl, width, height)
-    _do_display(screenshot, virtual, rotate, mirror)
+    with _fetch_image_from_urlfile(imgurl, width, height) as screenshot:
+        _do_display(screenshot, virtual, rotate, mirror)
 
 def _do_display(image, virtual, rotate, mirror):
     try:
