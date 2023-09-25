@@ -104,19 +104,17 @@ def _fetch_image_from_urlfile(url, resizeWidth, resizeHeight, fill):
     response = requests.get(url)
     response.raise_for_status()
     logging.info("Success")
-    image = Image.open(io.BytesIO(response.content))
-    
-    if fill:
-        image_ratio = image.width / image.height
-        desired_ratio = resizeWidth / resizeHeight
-        if image_ratio < desired_ratio:
-            ImageOps.scale(image, resizeWidth / image.width)
+    with Image.open(io.BytesIO(response.content)) as image:
+        if fill:
+            image_ratio = image.width / image.height
+            desired_ratio = resizeWidth / resizeHeight
+            if image_ratio < desired_ratio:
+                scaled_image = ImageOps.scale(image, resizeWidth / image.width)
+            else:
+                scaled_image = ImageOps.scale(image, resizeHeight / image.height)
+            return scaled_image.crop((0, 0, resizeWidth, resizeHeight))
         else:
-            ImageOps.scale(image, resizeHeight / image.height)
-        print('new size {}x{}'.format(image.width, image.height))
-        return image.crop((0, 0, resizeWidth, resizeHeight))
-    else:
-        return ImageOps.pad(image, (resizeWidth, resizeHeight), color=(255,255,255), centering=(0.5, 0.5))
+            return ImageOps.pad(image, (resizeWidth, resizeHeight), color=(255,255,255), centering=(0.5, 0.5))
 
 def do_webpage_display(url, width, height, virtual, rotate, mirror, fill):
     with _fetch_image_from_page(url, width, height, fill) as screenshot:
