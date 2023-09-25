@@ -1,6 +1,7 @@
 import argparse
 import logging
 import time
+import random
 from datetime import date, datetime
 
 import display_image_it8951
@@ -17,13 +18,16 @@ PAPERS = [
     'MN_ST',
     'WI_PC',
     'MA_BG',
-    'IL_CT'
+    'IL_CT',
+    'CHI_PD',
+    'TX_DMN',
 ]
 DEFAULT_PAPER = 'NY_NYT'
 
 class NewspaperUrl:
     def __init__(self, papers):
         self.papers = papers
+        random.shuffle(self.papers)
         self.paper = iter(self.papers)
 
     def getNextNewspaperUrl(self):
