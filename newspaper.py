@@ -9,15 +9,15 @@ import schedule
 logging.basicConfig(level=logging.INFO)
 
 FREEDOMFORUM_URL = 'https://cdn.freedomforum.org/dfp/jpg{date}/lg/{paper}.jpg'
-PAPERS = {
-    9: 'CA_SFC',
-    10: 'CA_EBT',
-    11: 'CA_LAT',
-    12: 'NY_NYT',
-    13: 'MN_ST',
-    14: 'WI_PC',
-    15: 'MA_BG',
-}
+PAPERS = [
+    'CA_SFC',
+    'CA_EBT',
+    'CA_LAT',
+    'NY_NYT',
+    'MN_ST',
+    'WI_PC',
+    'MA_BG',
+]
 DEFAULT_PAPER = 'NY_NYT'
 
 class NewspaperUrl:
@@ -59,11 +59,14 @@ def create_job(width, height, virtual, mirror, rotate):
     
 def main():
     args = parse_args()
-    schedule.every(2).minutes.do(create_job(args.width, args.height, args.virtual, True, "CCW"))
+    job = create_job(args.width, args.height, args.virtual, True, "CCW")
+    job()
+    # schedule.every(2).minutes.do(create_job(args.width, args.height, args.virtual, True, "CCW"))
 
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
+    # logging.info("Starting job runs")
+    # while True:
+    #     schedule.run_pending()
+    #     time.sleep(1)
 
 if __name__ == '__main__':
     main()
