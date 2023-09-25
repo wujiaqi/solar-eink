@@ -46,8 +46,8 @@ def parse_args():
     p.add_argument('-w', '--width', type=int, required=True)
     p.add_argument('-t', '--height', type=int, required=True)
     group = p.add_mutually_exclusive_group(required=True)
-    group.add_argument('--sec', help="set period for update in seconds")
-    group.add_argument('--min', help="set period for update in minutes")
+    group.add_argument('--sec', type=int, help="set period for update in seconds")
+    group.add_argument('--min', type=int, help="set period for update in minutes")
     return p.parse_args()
 
 def create_job(width, height, virtual, mirror, rotate):
