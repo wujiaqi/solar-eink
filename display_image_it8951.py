@@ -109,14 +109,15 @@ def _fetch_image_from_urlfile(url, resizeWidth, resizeHeight, fill, scale):
         desired_ratio = resizeWidth / resizeHeight
         if fill:
             if image_ratio < desired_ratio:
+                scale_factor = resizeWidth / image.width
                 scaled_image = ImageOps.scale(image, resizeWidth / image.width, resample=Image.Resampling.LANCZOS)
             else:
-                scaled_image = ImageOps.scale(image, resizeHeight / image.height, resample=Image.Resampling.LANCZOS)
+                scale_factor = resizeHeight / image.height
+            scaled_image = ImageOps.scale(image, scale_factor, resample=Image.Resampling.LANCZOS)
             return scaled_image.crop((0, 0, resizeWidth, resizeHeight))
         else:
-            with ImageOps.scale(image, scale, resample=Image.Resampling.LANCZOS) as scaled_image:
-                scaled_image.crop((0, 0, scaled_image.width, resizeHeight))
-                return ImageOps.pad(scaled_image, (resizeWidth, resizeHeight), color=(255,255,255), centering=(0.5, 0.5))
+            padded_image = ImageOps.pad(image, (resizeWidth * scale, resizeHeight * scale), color=(255,255,255), method=Image.Resampling.LANCZOS, centering=(0.5, 0.5))
+            return padded_image.crop((0, 0, scaled_image.width, resizeHeight))
 
 def do_webpage_display(url, width, height, virtual, rotate, mirror, fill):
     with _fetch_image_from_page(url, width, height, fill) as screenshot:
@@ -149,7 +150,7 @@ def main():
     if args.url:
         do_webpage_display(args.url, args.width, args.height, args.virtual, args.mirror, False)
     elif args.imgurl:
-        do_imgurl_display(args.imgurl, args.width, args.height, args.virtual, args.mirror, False)
+        do_imgurl_display(args.imgurl, args.width, args.height, args.virtual, args.mirror, False, 1.0)
 
 if __name__ == '__main__':
     main()
