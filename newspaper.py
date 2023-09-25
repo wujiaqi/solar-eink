@@ -59,14 +59,12 @@ def create_job(width, height, virtual, mirror, rotate):
     
 def main():
     args = parse_args()
-    job = create_job(args.width, args.height, args.virtual, True, "CCW")
-    job()
-    # schedule.every(2).minutes.do(create_job(args.width, args.height, args.virtual, True, "CCW"))
+    schedule.every(2).minutes.do(create_job(args.width, args.height, args.virtual, True, "CCW"))
 
-    # logging.info("Starting job runs")
-    # while True:
-    #     schedule.run_pending()
-    #     time.sleep(1)
+    logging.info("Starting job runs")
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
 
 if __name__ == '__main__':
     main()
