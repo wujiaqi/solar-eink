@@ -113,6 +113,7 @@ def _fetch_image_from_urlfile(url, resizeWidth, resizeHeight, fill):
             ImageOps.scale(image, resizeWidth / image.width)
         else:
             ImageOps.scale(image, resizeHeight / image.height)
+        print('new size {}x{}'.format(image.width, image.height))
         return image.crop((0, 0, resizeWidth, resizeHeight))
     else:
         return ImageOps.pad(image, (resizeWidth, resizeHeight), color=(255,255,255), centering=(0.5, 0.5))
