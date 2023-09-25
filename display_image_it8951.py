@@ -105,7 +105,7 @@ def _fetch_image_from_urlfile(url, resizeWidth, resizeHeight):
     response.raise_for_status()
     logging.info("Success")
     image = Image.open(io.BytesIO(response.content))
-    return ImageOps.pad(image, (resizeWidth, resizeHeight), centering=(0.5, 0.5))
+    return ImageOps.pad(image, (resizeWidth, resizeHeight), color=(255,255,255), centering=(0.5, 0.5))
 
 def do_webpage_display(url, width, height, virtual, rotate, mirror):
     screenshot = _fetch_image_from_page(url, width, height)

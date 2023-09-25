@@ -53,7 +53,7 @@ def create_job(width, height, virtual, mirror, rotate):
         logging.info("running job...")
         url = newspaper.getNextNewspaperUrl()
         logging.info("Newspaper url {}".format(url))
-        display_image_it8951.do_imgurl_display(newspaper.getNextNewspaperUrl(),width, height, virtual, rotate, mirror)
+        display_image_it8951.do_imgurl_display(url,width, height, virtual, rotate, mirror)
         
     return jobfunc
     
