@@ -45,6 +45,9 @@ def parse_args():
                         'physical device)')
     p.add_argument('-w', '--width', type=int, required=True)
     p.add_argument('-t', '--height', type=int, required=True)
+    group = p.add_mutually_exclusive_group(required=True)
+    group.add_argument('--sec', help="set period for update in seconds")
+    group.add_argument('--min', help="set period for update in minutes")
     return p.parse_args()
 
 def create_job(width, height, virtual, mirror, rotate):
@@ -59,12 +62,20 @@ def create_job(width, height, virtual, mirror, rotate):
     
 def main():
     args = parse_args()
-    schedule.every(2).minutes.do(create_job(args.width, args.height, args.virtual, True, "CCW"))
+    if args.min:
+        schedule.every(args.min).minutes.do(create_job(args.width, args.height, args.virtual, True, "CCW"))
+    elif args.sec:
+        schedule.every(args.sec).seconds.do(create_job(args.width, args.height, args.virtual, True, "CCW"))
 
     logging.info("Starting job runs")
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
+    try:
+        while True:
+            schedule.run_pending()
+            time.sleep(1)
+    except KeyboardInterrupt:
+        logging.info("Ctrl + c, exiting...")
+        schedule.clear()
+        exit()
 
 if __name__ == '__main__':
     main()
