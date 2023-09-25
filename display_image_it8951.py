@@ -1,5 +1,5 @@
 from time import sleep
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, Resampling
 import argparse
 import os
 import io
@@ -109,9 +109,9 @@ def _fetch_image_from_urlfile(url, resizeWidth, resizeHeight, fill):
             image_ratio = image.width / image.height
             desired_ratio = resizeWidth / resizeHeight
             if image_ratio < desired_ratio:
-                scaled_image = ImageOps.scale(image, resizeWidth / image.width)
+                scaled_image = ImageOps.scale(image, resizeWidth / image.width, resample=Resampling.LANCZOS)
             else:
-                scaled_image = ImageOps.scale(image, resizeHeight / image.height)
+                scaled_image = ImageOps.scale(image, resizeHeight / image.height, resample=Resampling.LANCZOS)
             return scaled_image.crop((0, 0, resizeWidth, resizeHeight))
         else:
             return ImageOps.pad(image, (resizeWidth, resizeHeight), color=(255,255,255), centering=(0.5, 0.5))
