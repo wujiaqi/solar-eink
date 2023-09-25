@@ -117,7 +117,7 @@ def _fetch_image_from_urlfile(url, resizeWidth, resizeHeight, fill, scale):
             return scaled_image.crop((0, 0, resizeWidth, resizeHeight))
         else:
             padded_image = ImageOps.pad(image, (int(resizeWidth * scale), int(resizeHeight * scale)), color=(255,255,255), method=Image.Resampling.LANCZOS, centering=(0.5, 0.5))
-            return padded_image.crop((0, 0, scaled_image.width, resizeHeight))
+            return padded_image.crop((0, 0, padded_image.width, resizeHeight))
 
 def do_webpage_display(url, width, height, virtual, rotate, mirror, fill):
     with _fetch_image_from_page(url, width, height, fill) as screenshot:
