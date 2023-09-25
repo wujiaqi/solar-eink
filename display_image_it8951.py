@@ -96,28 +96,29 @@ def init_display(virtual, rotate, mirror):
     return display
     
 
-def fetch_image_from_page(url, width, height):
+def _fetch_image_from_page(url, width, height):
     return asyncio.get_event_loop().run_until_complete(capture_page.capture(url, width, height))
 
-def fetch_image_from_urlfile(url, resizeWidth, resizeHeight):
+def _fetch_image_from_urlfile(url, resizeWidth, resizeHeight):
     logging.info("Downloading image from {}".format(url))
     response = requests.get(url)
     response.raise_for_status()
     logging.info("Success")
     image = Image.open(io.BytesIO(response.content))
-    return ImageOps.contain(image, (resizeWidth, resizeHeight))
+    return ImageOps.pad(image, (resizeWidth, resizeHeight), centering=(0.5, 0.5))
 
-def main():
-    args = parse_args()
-    # screencap_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), args.output)
-    if args.url:
-        screenshot = fetch_image_from_page(args.url, args.width, args.height)
-    elif args.imgurl:
-        screenshot = fetch_image_from_urlfile(args.imgurl, args.width, args.height)
+def do_webpage_display(url, width, height, virtual, rotate, mirror):
+    screenshot = _fetch_image_from_page(url, width, height)
+    _do_display(screenshot, virtual, rotate, mirror)
 
+def do_imgurl_display(imgurl, width, height, virtual, rotate, mirror):
+    screenshot = _fetch_image_from_urlfile(imgurl, width, height)
+    _do_display(screenshot, virtual, rotate, mirror)
+
+def _do_display(image, virtual, rotate, mirror):
     try:
-        display = init_display(args.virtual, args.rotate, args.mirror)
-        display_image(display, screenshot)
+        display = init_display(virtual, rotate, mirror)
+        display_image(display, image)
         logging.info('Done!')
         display.epd.standby()
         logging.info('Standby...')
@@ -132,6 +133,12 @@ def main():
         display.epd.standby()
         exit()
 
+def main():
+    args = parse_args()
+    if args.url:
+        do_webpage_display(args.url, args.width, args.height, args.virtual, args.mirror)
+    elif args.imgurl:
+        do_imgurl_display(args.imgurl, args.width, args.height, args.virtual, args.mirror)
 
 if __name__ == '__main__':
     main()
