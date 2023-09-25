@@ -116,8 +116,14 @@ def _fetch_image_from_urlfile(url, resizeWidth, resizeHeight, fill, scale):
             scaled_image = ImageOps.scale(image, scale_factor, resample=Image.Resampling.LANCZOS)
             return scaled_image.crop((0, 0, resizeWidth, resizeHeight))
         else:
-            padded_image = ImageOps.pad(image, (int(resizeWidth * scale), int(resizeHeight * scale)), color=(255,255,255), method=Image.Resampling.LANCZOS, centering=(0.5, 0.5))
-            return padded_image.crop((0, 0, padded_image.width, resizeHeight))
+            if image_ratio < desired_ratio:
+                pad_width = resizeWidth
+                pad_height = int(resizeHeight * scale)
+            else:
+                pad_width = int(resizeWidth * scale)
+                pad_height = resizeHeight
+            padded_image = ImageOps.pad(image, (pad_width, pad_height), color=(255,255,255), method=Image.Resampling.LANCZOS, centering=(0.5, 0.5))
+            return padded_image.crop((0, 0, resizeWidth, resizeHeight))
 
 def do_webpage_display(url, width, height, virtual, rotate, mirror, fill):
     with _fetch_image_from_page(url, width, height, fill) as screenshot:
