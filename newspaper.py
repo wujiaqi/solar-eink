@@ -17,6 +17,7 @@ PAPERS = [
     'MN_ST',
     'WI_PC',
     'MA_BG',
+    'IL_CT'
 ]
 DEFAULT_PAPER = 'NY_NYT'
 
