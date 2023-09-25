@@ -50,19 +50,21 @@ def parse_args():
                         'physical device)')
     p.add_argument('-w', '--width', type=int, required=True)
     p.add_argument('-t', '--height', type=int, required=True)
-    p.add_argument('-f', '--fill', action='store_true', help='if set, fills entire frame with image with cropping')
-    group = p.add_mutually_exclusive_group()
-    group.add_argument('--sec', type=int, help="set period for update in seconds")
-    group.add_argument('--min', type=int, help="set period for update in minutes")
+    period_group = p.add_mutually_exclusive_group()
+    period_group.add_argument('--sec', type=int, help="set period for update in seconds")
+    period_group.add_argument('--min', type=int, help="set period for update in minutes")
+    scale_group = p.add_mutually_exclusive_group()
+    scale_group.add_argument('--fill', action='store_true', help='if set, fills entire frame with image with cropping')
+    scale_group.add_argument('--scale', type=float, default=1.0, help='if set, starst with fit and scales up image by this factor. The larger dimension will be cropped')
     return p.parse_args()
 
-def create_job(width, height, virtual, mirror, rotate, fill):
+def create_job(width, height, virtual, mirror, rotate, fill, scale):
     newspaper = NewspaperUrl(PAPERS)
     def jobfunc():
         logging.info("running job...")
         url = newspaper.getNextNewspaperUrl()
         logging.info("Newspaper url {}".format(url))
-        display_image_it8951.do_imgurl_display(url,width, height, virtual, rotate, mirror, fill)
+        display_image_it8951.do_imgurl_display(url,width, height, virtual, rotate, mirror, fill, scale)
         
     return jobfunc
     
@@ -70,12 +72,12 @@ def main():
     args = parse_args()
 
     if not args.min and not args.sec:
-        create_job(args.width, args.height, args.virtual, True, "CCW", args.fill)()
+        create_job(args.width, args.height, args.virtual, True, "CCW", args.fill, args.scale)()
     else:
         if args.min:
-            schedule.every(args.min).minutes.do(create_job(args.width, args.height, args.virtual, True, "CCW", args.fill))
+            schedule.every(args.min).minutes.do(create_job(args.width, args.height, args.virtual, True, "CCW", args.fill, args.scale))
         elif args.sec:
-            schedule.every(args.sec).seconds.do(create_job(args.width, args.height, args.virtual, True, "CCW", args.fill))
+            schedule.every(args.sec).seconds.do(create_job(args.width, args.height, args.virtual, True, "CCW", args.fill, args.scale))
 
         logging.info("Starting job runs")
         try:
