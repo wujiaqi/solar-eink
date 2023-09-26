@@ -118,8 +118,12 @@ def _fetch_image_from_urlfile(url, resizeWidth, resizeHeight, fill, scale):
             if image_ratio < desired_ratio:
                 pad_width = resizeWidth
                 pad_height = int(resizeHeight * scale)
+                if pad_height > resizeHeight:
+                    pad_height = resizeHeight
             else:
                 pad_width = int(resizeWidth * scale)
+                if pad_width > resizeWidth:
+                    pad_width = resizeWidth
                 pad_height = resizeHeight
             padded_image = ImageOps.pad(image, (pad_width, pad_height), color=(255,255,255), method=Image.Resampling.LANCZOS, centering=(0.5, 0.5))
             return padded_image.crop((0, 0, resizeWidth, resizeHeight))
