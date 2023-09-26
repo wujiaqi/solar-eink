@@ -53,12 +53,10 @@ class NewspaperUrl:
             'CA_SFC',
             'CA_EBT',
             'CA_LAT',
-            'NY_NYT',
             'MN_ST',
             'WI_PC',
             'MA_BG',
             'IL_CT',
-            # 'CHI_PD',
             'TX_DMN',
         ],
         FrontPagesPaper: [
@@ -66,6 +64,7 @@ class NewspaperUrl:
             'the-wall-street-journal',
             'south-china-morning-post',
             'the-guardian-usa',
+            'the-new-york-times'
         ]   
     }
 
