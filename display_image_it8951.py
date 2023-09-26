@@ -110,7 +110,6 @@ def _fetch_image_from_urlfile(url, resizeWidth, resizeHeight, fill, scale):
         if fill:
             if image_ratio < desired_ratio:
                 scale_factor = resizeWidth / image.width
-                scaled_image = ImageOps.scale(image, resizeWidth / image.width, resample=Image.Resampling.LANCZOS)
             else:
                 scale_factor = resizeHeight / image.height
             scaled_image = ImageOps.scale(image, scale_factor, resample=Image.Resampling.LANCZOS)
