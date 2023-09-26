@@ -50,21 +50,22 @@ class FrontPagesPaper(AbstractTodaysNewspaper):
 class NewspaperUrl:
     PAPERS = {
         FreedomForumPaper: [
-            # 'CA_SFC',
-            # 'CA_EBT',
-            # 'CA_LAT',
-            # 'NY_NYT',
-            # 'MN_ST',
-            # 'WI_PC',
-            # 'MA_BG',
-            # 'IL_CT',
+            'CA_SFC',
+            'CA_EBT',
+            'CA_LAT',
+            'NY_NYT',
+            'MN_ST',
+            'WI_PC',
+            'MA_BG',
+            'IL_CT',
             # 'CHI_PD',
-            # 'TX_DMN',
+            'TX_DMN',
         ],
         FrontPagesPaper: [
             'the-washington-post',
             'the-wall-street-journal',
             'south-china-morning-post',
+            'the-guardian-usa',
         ]   
     }
 
