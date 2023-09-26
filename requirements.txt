@@ -3,6 +3,5 @@ pyppeteer==1.0.2
 requests==2.28.1
 schedule==1.2.0
 IT8951 @ git+https://github.com/GregDMeyer/IT8951.git@67215164a7fc471bc6904f72ad55e51030905a97#subdirectory=./
-#waveshare_epd @ git+https://github.com/waveshareteam/e-Paper.git@master#subdirectory=RaspberryPi_JetsonNano/python
 waveshare-epaper==1.2.0
 RPi.GPIO==0.7.1
