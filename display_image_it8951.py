@@ -23,8 +23,6 @@ def parse_args():
                    help='run the tests with the display rotated by the specified value')
     p.add_argument('-m', '--mirror', action='store_true',
                    help='Mirror the display (use this if text appears backwards)')
-    p.add_argument('-w', '--width', type=int, required=True)
-    p.add_argument('-t', '--height', type=int, required=True)
 
     group = p.add_mutually_exclusive_group(required=True)
     group.add_argument('--url', help="captures a screenshot of the web page at a url and displays it on screen")
@@ -106,6 +104,7 @@ def _fetch_image_from_urlfile(url, resizeWidth, resizeHeight, fill, scale):
     response.raise_for_status()
     logging.info("Success")
     with Image.open(io.BytesIO(response.content)) as image:
+        logging.info("scaling image to {} x {}".format(resizeWidth, resizeHeight))
         image_ratio = image.width / image.height
         desired_ratio = resizeWidth / resizeHeight
         if fill:
@@ -127,22 +126,25 @@ def _fetch_image_from_urlfile(url, resizeWidth, resizeHeight, fill, scale):
             padded_image = ImageOps.pad(image, (pad_width, pad_height), color=(255,255,255), method=Image.Resampling.LANCZOS, centering=(0.5, 0.5))
             return padded_image.crop((0, 0, resizeWidth, resizeHeight))
 
-def do_webpage_display(url, width, height, virtual, rotate, mirror, fill):
-    with _fetch_image_from_page(url, width, height, fill) as screenshot:
-        _do_display(screenshot, virtual, rotate, mirror)
+def do_webpage_display(url, virtual, rotate, mirror, fill):
+    display = init_display(virtual, rotate, mirror)
+    with _fetch_image_from_page(url, display.width, display.height, fill) as screenshot:
+        _do_display(display, screenshot)
 
-def do_imgurl_display(imgurl, width, height, virtual, rotate, mirror, fill, scale):
-    with _fetch_image_from_urlfile(imgurl, width, height, fill, scale) as screenshot:
-        _do_display(screenshot, virtual, rotate, mirror)
+def do_imgurl_display(imgurl,virtual, rotate, mirror, fill, scale):
+    display = init_display(virtual, rotate, mirror)
+    with _fetch_image_from_urlfile(imgurl, display.width, display.height, fill, scale) as screenshot:
+        _do_display(display, screenshot)
 
-def do_file_display(path, width, height, virtual, rotate, mirror, fill, scale):
+def do_file_display(path, virtual, rotate, mirror):
+    display = init_display(virtual, rotate, mirror)
     with Image.open(path, 'r') as image:
-        _do_display(image, virtual, rotate, mirror)
+        padded_image = ImageOps.pad(image, (display.width, display.height), color=(255,255,255), method=Image.Resampling.LANCZOS, centering=(0.5, 0.5))
+        _do_display(display, image)
         
 
-def _do_display(image, virtual, rotate, mirror):
+def _do_display(display, image):
     try:
-        display = init_display(virtual, rotate, mirror)
         display_image(display, image)
         logging.info('Done!')
         display.epd.standby()
@@ -165,7 +167,7 @@ def main():
     elif args.imgurl:
         do_imgurl_display(args.imgurl, args.width, args.height, args.virtual, args.rotate, args.mirror, True, 1.0)
     elif args.filename:
-        do_file_display(args.filename, args.width, args.height, args.virtual, args.rotate, args.mirror, True, 1.0)
+        do_file_display(args.filename, args.width, args.height, args.virtual, args.rotate, args.mirror)
 
 
 if __name__ == '__main__':

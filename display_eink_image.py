@@ -19,10 +19,9 @@ if os.path.exists(libdir):
     sys.path.append(libdir)
 
 def parse_args():
-    p = argparse.ArgumentParser(description='Test EPD functionality')
+    p = argparse.ArgumentParser(description='EPD image displayer, for waveshare_epd python library supported displays')
     p.add_argument('-u', '--url', required=True)
-    p.add_argument('-w', '--width', type=int, required=True)
-    p.add_argument('-t', '--height', type=int, required=True)
+    p.add_argument('-e', '--epd', help='epd modeule name', required=True)
     return p.parse_args()
 
 def get_timestamp_str():
@@ -35,12 +34,10 @@ def get_timestamp_str():
 def main():
     font18 = ImageFont.truetype(os.path.join(fontdir, 'Font.ttc'), 18)
     args = parse_args()
-    screenshot = asyncio.get_event_loop().run_until_complete(capture_page.capture(args.url, args.width, args.height))
+    epd = epaper.epaper('epd7in5_V2').EPD()
+    screenshot = asyncio.get_event_loop().run_until_complete(capture_page.capture(args.url, epd.width, epd.height))
 
-    try:
-        logging.info("epd7in5_V2 Demo")
-        epd = epaper.epaper('epd7in5_V2').EPD()
-        
+    try:        
         logging.info("init and Clear")
         epd.init()
         epd.Clear()
@@ -55,17 +52,14 @@ def main():
         logging.info("Goto Sleep...")
         epd.sleep()
         
-    except IOError as e:
-        logging.info(e)
-        
     except KeyboardInterrupt:    
         logging.info("ctrl + c:")
-        epd7in5_V2.epdconfig.module_exit()
+        epd.epdconfig.module_exit()
         exit()
 
     except Exception as e:
         logging.info(e)
-        epd7in5_V2.epdconfig.module_exit()
+        epd.epdconfig.module_exit()
         exit()
 
 
