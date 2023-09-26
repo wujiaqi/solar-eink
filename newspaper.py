@@ -1,45 +1,89 @@
 import argparse
 import logging
-import time
 import random
+import time
+import re
+from abc import ABC, abstractmethod
 from datetime import date, datetime
 
 import display_image_it8951
+import requests
 import schedule
 
 logging.basicConfig(level=logging.INFO)
 
-FREEDOMFORUM_URL = 'https://cdn.freedomforum.org/dfp/jpg{date}/lg/{paper}.jpg'
-PAPERS = [
-    'CA_SFC',
-    'CA_EBT',
-    'CA_LAT',
-    'NY_NYT',
-    'MN_ST',
-    'WI_PC',
-    'MA_BG',
-    'IL_CT',
-    'CHI_PD',
-    'TX_DMN',
-]
-DEFAULT_PAPER = 'NY_NYT'
+class AbstractTodaysNewspaper(ABC):
+
+    def getNewspaperUrl(self):
+        pass
+
+class FreedomForumPaper(AbstractTodaysNewspaper):
+    FREEDOMFORUM_URL = 'https://cdn.freedomforum.org/dfp/jpg{date}/lg/{paper}.jpg'
+
+    def __init__(self, paper_key):
+        super().__init__()
+        self.paper = paper_key
+
+    def getNewspaperUrl(self):
+        return self.FREEDOMFORUM_URL.format(date=datetime.now().day, paper=self.paper)
+
+
+class FrontPagesPaper(AbstractTodaysNewspaper):
+    BASE_URL = "https://www.frontpages.com/{paper}"
+
+    def __init__(self, paper_key) -> None:
+        super().__init__()
+        self.paper = paper_key
+
+    def getNewspaperUrl(self):
+        url = FrontPagesPaper.BASE_URL.format(paper=self.paper)
+        logging.info("fetching todays paper from url {}".format(FrontPagesPaper.BASE_URL.format(paper=self.paper)))
+        response = requests.get(url)
+        response.raise_for_status()
+        x = re.search(r'https:\/\/www\.frontpages\.com\/g\/\d{4}\/\d{2}\/\d{2}\/.+\.webp\.jpg', response.content)
+        if x is None:
+            raise Exception("no jpg found for this paper")
+
+        return x.group()
+    
 
 class NewspaperUrl:
-    def __init__(self, papers):
-        self.papers = papers
+    PAPERS = {
+        FreedomForumPaper: [
+            # 'CA_SFC',
+            # 'CA_EBT',
+            # 'CA_LAT',
+            # 'NY_NYT',
+            # 'MN_ST',
+            # 'WI_PC',
+            # 'MA_BG',
+            # 'IL_CT',
+            # 'CHI_PD',
+            # 'TX_DMN',
+        ],
+        FrontPagesPaper: [
+            'the-washington-post',
+            'the-wall-street-journal',
+            'south-china-morning-post',
+        ]   
+    }
+
+    def __init__(self):
+        self.papers = []
+        for paper in NewspaperUrl.PAPERS.items():
+            self.papers.append(paper[0](paper[1]))
+
         random.shuffle(self.papers)
         self.paper = iter(self.papers)
 
     def getNextNewspaperUrl(self):
-        now = datetime.now()
-        # paper = PAPERS[now.hour] if now.hour in PAPERS else DEFAULT_PAPER
         try:
             paper_selection = next(self.paper)
         except StopIteration:
             self.paper = iter(self.papers)
             paper_selection = next(self.paper)
             
-        return FREEDOMFORUM_URL.format(date=now.day, paper=paper_selection)
+        return paper_selection.getNewspaperUrl()
         
 
 def parse_args():
@@ -59,7 +103,7 @@ def parse_args():
     return p.parse_args()
 
 def create_job(width, height, virtual, mirror, rotate, fill, scale):
-    newspaper = NewspaperUrl(PAPERS)
+    newspaper = NewspaperUrl()
     def jobfunc():
         logging.info("running job...")
         url = newspaper.getNextNewspaperUrl()
