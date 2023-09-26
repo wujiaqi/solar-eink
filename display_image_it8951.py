@@ -27,8 +27,9 @@ def parse_args():
     p.add_argument('-t', '--height', type=int, required=True)
 
     group = p.add_mutually_exclusive_group(required=True)
-    group.add_argument('--url')
-    group.add_argument('--imgurl')
+    group.add_argument('--url', help="captures a screenshot of the web page at a url and displays it on screen")
+    group.add_argument('--imgurl', help="downloads image file at url and displays it on screen")
+    group.add_argument('--filename', help="displays image file on screen at provided path")
     return p.parse_args()
 
 
@@ -134,6 +135,11 @@ def do_imgurl_display(imgurl, width, height, virtual, rotate, mirror, fill, scal
     with _fetch_image_from_urlfile(imgurl, width, height, fill, scale) as screenshot:
         _do_display(screenshot, virtual, rotate, mirror)
 
+def do_file_display(path, width, height, virtual, rotate, mirror, fill, scale):
+    with Image.open(path, 'r') as image:
+        _do_display(image, virtual, rotate, mirror)
+        
+
 def _do_display(image, virtual, rotate, mirror):
     try:
         display = init_display(virtual, rotate, mirror)
@@ -157,7 +163,10 @@ def main():
     if args.url:
         do_webpage_display(args.url, args.width, args.height, args.virtual, args.mirror, False)
     elif args.imgurl:
-        do_imgurl_display(args.imgurl, args.width, args.height, args.virtual, args.mirror, False, 1.0)
+        do_imgurl_display(args.imgurl, args.width, args.height, args.virtual, args.mirror, True, 1.0)
+    elif args.filename:
+        do_file_display(args.filename, args.width, args.height, args.virtual, args.mirror, True, 1.0)
+
 
 if __name__ == '__main__':
     main()
