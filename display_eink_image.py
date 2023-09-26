@@ -11,7 +11,7 @@ from datetime import datetime
 
 import capture_page
 from PIL import Image, ImageDraw, ImageFont
-from waveshare_epd import epd7in5_V2
+import epaper
 
 fontdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'pic')
 libdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib')
@@ -39,7 +39,7 @@ def main():
 
     try:
         logging.info("epd7in5_V2 Demo")
-        epd = epd7in5_V2.EPD()
+        epd = epaper.epaper('epd7in5_V2').EPD()
         
         logging.info("init and Clear")
         epd.init()
