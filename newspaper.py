@@ -40,7 +40,7 @@ class FrontPagesPaper(AbstractTodaysNewspaper):
         logging.info("fetching todays paper from url {}".format(FrontPagesPaper.BASE_URL.format(paper=self.paper)))
         response = requests.get(url)
         response.raise_for_status()
-        x = re.search(r'https:\/\/www\.frontpages\.com\/g\/\d{4}\/\d{2}\/\d{2}\/.+\.webp\.jpg', response.content)
+        x = re.search(r'https:\/\/www\.frontpages\.com\/g\/\d{4}\/\d{2}\/\d{2}\/.+\.webp\.jpg', response.text)
         if x is None:
             raise Exception("no jpg found for this paper")
 
