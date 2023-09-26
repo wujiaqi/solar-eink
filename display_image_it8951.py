@@ -161,11 +161,11 @@ def _do_display(image, virtual, rotate, mirror):
 def main():
     args = parse_args()
     if args.url:
-        do_webpage_display(args.url, args.width, args.height, args.virtual, args.mirror, False)
+        do_webpage_display(args.url, args.width, args.height, args.virtual, args.rotate, args.mirror, False)
     elif args.imgurl:
-        do_imgurl_display(args.imgurl, args.width, args.height, args.virtual, args.mirror, True, 1.0)
+        do_imgurl_display(args.imgurl, args.width, args.height, args.virtual, args.rotate, args.mirror, True, 1.0)
     elif args.filename:
-        do_file_display(args.filename, args.width, args.height, args.virtual, args.mirror, True, 1.0)
+        do_file_display(args.filename, args.width, args.height, args.virtual, args.rotate, args.mirror, True, 1.0)
 
 
 if __name__ == '__main__':
