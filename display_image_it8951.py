@@ -126,9 +126,9 @@ def _fetch_image_from_urlfile(url, resizeWidth, resizeHeight, fill, scale):
             padded_image = ImageOps.pad(image, (pad_width, pad_height), color=(255,255,255), method=Image.Resampling.LANCZOS, centering=(0.5, 0.5))
             return padded_image.crop((0, 0, resizeWidth, resizeHeight))
 
-def do_webpage_display(url, virtual, rotate, mirror, fill):
+def do_webpage_display(url, virtual, rotate, mirror):
     display = init_display(virtual, rotate, mirror)
-    with _fetch_image_from_page(url, display.width, display.height, fill) as screenshot:
+    with _fetch_image_from_page(url, display.width, display.height) as screenshot:
         _do_display(display, screenshot)
 
 def do_imgurl_display(imgurl,virtual, rotate, mirror, fill, scale):
@@ -147,27 +147,29 @@ def _do_display(display, image):
     try:
         display_image(display, image)
         logging.info('Done!')
-        display.epd.standby()
-        logging.info('Standby...')
+        display.epd.sleep()
+        logging.info('Putting display to sleep...')
 
     except KeyboardInterrupt:    
         logging.info("ctrl + c:")
-        display.epd.standby()
+        logging.info('Putting display to sleep...')
+        display.epd.sleep()
         exit()
 
     except Exception as e:
         logging.info(e)
-        display.epd.standby()
+        logging.info('Putting display to sleep...')
+        display.epd.sleep()
         exit()
 
 def main():
     args = parse_args()
     if args.url:
-        do_webpage_display(args.url, args.width, args.height, args.virtual, args.rotate, args.mirror, False)
+        do_webpage_display(args.url, args.virtual, args.rotate, args.mirror)
     elif args.imgurl:
-        do_imgurl_display(args.imgurl, args.width, args.height, args.virtual, args.rotate, args.mirror, True, 1.0)
+        do_imgurl_display(args.imgurl, args.virtual, args.rotate, args.mirror, True, 1.0)
     elif args.filename:
-        do_file_display(args.filename, args.width, args.height, args.virtual, args.rotate, args.mirror)
+        do_file_display(args.filename, args.virtual, args.rotate, args.mirror)
 
 
 if __name__ == '__main__':
