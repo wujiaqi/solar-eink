@@ -70,8 +70,9 @@ class NewspaperUrl:
 
     def __init__(self):
         self.papers = []
-        for paper in NewspaperUrl.PAPERS.items():
-            self.papers.append(paper[0](paper[1]))
+        for paper_source in NewspaperUrl.PAPERS.items():
+            for paper_name in paper_source[1]:
+                self.papers.append(paper_source[0](paper_name))
 
         random.shuffle(self.papers)
         self.paper = iter(self.papers)
