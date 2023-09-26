@@ -1,0 +1,3 @@
+[submodule "lib/IT8951"]
+	path = lib/IT8951
+	url = git@github.com:GregDMeyer/IT8951.git
