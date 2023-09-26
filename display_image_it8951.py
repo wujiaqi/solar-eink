@@ -118,8 +118,6 @@ def _fetch_image_from_urlfile(url, resizeWidth, resizeHeight, fill, scale):
             if image_ratio < desired_ratio:
                 pad_width = resizeWidth
                 pad_height = int(resizeHeight * scale)
-                if pad_height > resizeHeight:
-                    pad_height = resizeHeight
             else:
                 pad_width = int(resizeWidth * scale)
                 if pad_width > resizeWidth:
