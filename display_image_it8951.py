@@ -30,40 +30,6 @@ def parse_args():
     group.add_argument('--filename', help="displays image file on screen at provided path")
     return p.parse_args()
 
-
-def display_image_8bpp(display, img_path):
-    logging.info('Displaying "{}"...'.format(img_path))
-
-    # clearing image to white
-    display.frame_buf.paste(0xFF, box=(0, 0, display.width, display.height))
-
-    img = Image.open(img_path)
-
-    # TODO: this should be built-in
-    dims = (display.width, display.height)
-
-    img.thumbnail(dims)
-    paste_coords = [dims[i] - img.size[i] for i in (0,1)]  # align image with bottom of display
-    display.frame_buf.paste(img, paste_coords)
-
-    display.draw_full(constants.DisplayModes.GC16)
-
-
-def display_image(display, img):
-    logging.info('Displaying image...')
-
-    # clearing image to white
-    display.frame_buf.paste(0xFF, box=(0, 0, display.width, display.height))
-    # TODO: this should be built-in
-    dims = (display.width, display.height)
-
-    img.thumbnail(dims)
-    paste_coords = [dims[i] - img.size[i] for i in (0,1)]  # align image with bottom of display
-    display.frame_buf.paste(img, paste_coords)
-
-    display.draw_full(constants.DisplayModes.GC16)
-
-
 def print_system_info(display):
     epd = display.epd
 
@@ -126,18 +92,15 @@ def _fetch_image_from_urlfile(url, resizeWidth, resizeHeight, fill, scale):
             padded_image = ImageOps.pad(image, (pad_width, pad_height), color=(255,255,255), method=Image.Resampling.LANCZOS, centering=(0.5, 0.5))
             return padded_image.crop((0, 0, resizeWidth, resizeHeight))
 
-def do_webpage_display(url, virtual, rotate, mirror):
-    display = init_display(virtual, rotate, mirror)
+def do_webpage_display(display, url):
     with _fetch_image_from_page(url, display.width, display.height) as screenshot:
         _do_display(display, screenshot)
 
-def do_imgurl_display(imgurl,virtual, rotate, mirror, fill, scale):
-    display = init_display(virtual, rotate, mirror)
+def do_imgurl_display(display, imgurl, fill, scale):
     with _fetch_image_from_urlfile(imgurl, display.width, display.height, fill, scale) as screenshot:
         _do_display(display, screenshot)
 
-def do_file_display(path, virtual, rotate, mirror):
-    display = init_display(virtual, rotate, mirror)
+def do_file_display(display, path):
     with Image.open(path, 'r') as image:
         padded_image = ImageOps.pad(image, (display.width, display.height), color=(255,255,255), method=Image.Resampling.LANCZOS, centering=(0.5, 0.5))
         _do_display(display, image)
@@ -145,7 +108,10 @@ def do_file_display(path, virtual, rotate, mirror):
 
 def _do_display(display, image):
     try:
-        display_image(display, image)
+        dims = (display.width, display.height)
+        paste_coords = [dims[i] - image.size[i] for i in (0,1)]  # align image with bottom of display
+        display.frame_buf.paste(image, paste_coords)
+        display.draw_full(constants.DisplayModes.GC16)
         logging.info('Done!')
         display.epd.sleep()
         logging.info('Putting display to sleep...')
@@ -164,12 +130,13 @@ def _do_display(display, image):
 
 def main():
     args = parse_args()
+    display = init_display(args.virtual, args.rotate, args.mirror)
     if args.url:
-        do_webpage_display(args.url, args.virtual, args.rotate, args.mirror)
+        do_webpage_display(display, args.url)
     elif args.imgurl:
-        do_imgurl_display(args.imgurl, args.virtual, args.rotate, args.mirror, True, 1.0)
+        do_imgurl_display(display, args.imgurl, True, 1.0)
     elif args.filename:
-        do_file_display(args.filename, args.virtual, args.rotate, args.mirror)
+        do_file_display(display, args.filename)
 
 
 if __name__ == '__main__':

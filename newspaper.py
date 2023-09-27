@@ -53,6 +53,7 @@ class NewspaperUrl:
             'CA_SFC',
             'CA_EBT',
             'CA_LAT',
+            'NY_NYT',
             'MN_ST',
             'WI_PC',
             'MA_BG',
@@ -63,8 +64,7 @@ class NewspaperUrl:
             'the-washington-post',
             'the-wall-street-journal',
             'south-china-morning-post',
-            'the-guardian-usa',
-            'the-new-york-times'
+            'the-guardian-usa'
         ]   
     }
 
@@ -103,14 +103,15 @@ def parse_args():
 
 def create_job(virtual, mirror, rotate, fill, scale):
     newspaper = NewspaperUrl()
+    display = display_image_it8951.init_display(virtual, rotate, mirror)
     def jobfunc():
         logging.info("running job...")
         url = newspaper.getNextNewspaperUrl()
         logging.info("Newspaper url {}".format(url))
-        display_image_it8951.do_imgurl_display(url, virtual, rotate, mirror, fill, scale)
+        display_image_it8951.do_imgurl_display(display, url, fill, scale)
         
     return jobfunc
-    
+
 def main():
     args = parse_args()
 
