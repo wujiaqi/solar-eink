@@ -49,7 +49,7 @@ def init_display(virtual, rotate, mirror):
         # value means faster display refreshes. the documentation for the IT8951 device
         # says the max is 24 MHz (24000000), but my device seems to still work as high as
         # 80 MHz (80000000)
-        display = AutoEPDDisplay(vcom=-2.15, rotate=rotate, mirror=mirror, spi_hz=24000000)
+        display = AutoEPDDisplay(vcom=-1.37, rotate=rotate, mirror=mirror, spi_hz=24000000)
 
         logging.info('VCOM set to {}'.format(str(display.epd.get_vcom())))
 

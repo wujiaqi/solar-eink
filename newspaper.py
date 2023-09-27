@@ -103,11 +103,11 @@ def parse_args():
 
 def create_job(virtual, mirror, rotate, fill, scale):
     newspaper = NewspaperUrl()
-    display = display_image_it8951.init_display(virtual, rotate, mirror)
     def jobfunc():
         logging.info("running job...")
         url = newspaper.getNextNewspaperUrl()
         logging.info("Newspaper url {}".format(url))
+        display = display_image_it8951.init_display(virtual, rotate, mirror)
         display_image_it8951.do_imgurl_display(display, url, fill, scale)
         
     return jobfunc
