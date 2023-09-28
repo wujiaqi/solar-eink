@@ -5,3 +5,4 @@ schedule==1.2.0
 IT8951 @ git+https://github.com/GregDMeyer/IT8951.git@67215164a7fc471bc6904f72ad55e51030905a97#subdirectory=./
 waveshare-epaper==1.2.0
 RPi.GPIO==0.7.1
+numpy==1.26.0

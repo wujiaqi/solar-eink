@@ -1,6 +1,7 @@
 from time import sleep
 from PIL import Image, ImageOps
 import argparse
+import numpy as np
 import os
 import io
 import IT8951
@@ -106,12 +107,54 @@ def do_file_display(display, path):
         _do_display(display, image)
         
 
+# From https://scipython.com/blog/floyd-steinberg-dithering/
+def get_new_val(old_val, nc):
+    """
+    Get the "closest" colour to old_val in the range [0,1] per channel divided
+    into nc values.
+
+    """
+
+    return np.round(old_val * (nc - 1)) / (nc - 1)
+
+def fs_dither(img, nc):
+    """
+    Floyd-Steinberg dither the image img into a palette with nc colours per
+    channel.
+
+    """
+
+    arr = np.array(img, dtype=float) / 255
+
+    for ir in range(img.height):
+        for ic in range(img.width):
+            # NB need to copy here for RGB arrays otherwise err will be (0,0,0)!
+            old_val = arr[ir, ic].copy()
+            new_val = get_new_val(old_val, nc)
+            arr[ir, ic] = new_val
+            err = old_val - new_val
+            # In this simple example, we will just ignore the border pixels.
+            if ic < img.width - 1:
+                arr[ir, ic+1] += err * 7/16
+            if ir < img.height - 1:
+                if ic > 0:
+                    arr[ir+1, ic-1] += err * 3/16
+                arr[ir+1, ic] += err * 5/16
+                if ic < img.width - 1:
+                    arr[ir+1, ic+1] += err / 16
+
+    carr = np.array(arr/np.max(arr, axis=(0,1)) * 255, dtype=np.uint8)
+    return Image.fromarray(carr)
+
 def _do_display(display, image):
+
     try:
-        dims = (display.width, display.height)
-        paste_coords = [dims[i] - image.size[i] for i in (0,1)]  # align image with bottom of display
-        display.frame_buf.paste(image, paste_coords)
-        display.draw_full(constants.DisplayModes.GC16)
+        with image.convert('L'):
+            dithered_image = fs_dither(image, 4)
+            dims = (display.width, display.height)
+            paste_coords = [dims[i] - dithered_image.size[i] for i in (0,1)]  # align image with bottom of display
+            display.frame_buf.paste(dithered_image, paste_coords)
+            display.draw_full(constants.DisplayModes.GC16)
         logging.info('Done!')
         display.epd.sleep()
         logging.info('Putting display to sleep...')
