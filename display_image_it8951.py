@@ -4,14 +4,19 @@ import argparse
 import numpy as np
 import os
 import io
+import traceback
 import IT8951
 import logging
 import asyncio
 import requests
 import capture_page
+import threading
+import multiprocessing
+import math
+from tqdm import tqdm
 from IT8951 import constants
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 
 def parse_args():
@@ -93,18 +98,18 @@ def _fetch_image_from_urlfile(url, resizeWidth, resizeHeight, fill, scale):
             padded_image = ImageOps.pad(image, (pad_width, pad_height), color=(255,255,255), method=Image.Resampling.LANCZOS, centering=(0.5, 0.5))
             return padded_image.crop((0, 0, resizeWidth, resizeHeight))
 
-def do_webpage_display(display, url):
+def do_webpage_display(display, url, dither_levels=0):
     with _fetch_image_from_page(url, display.width, display.height) as screenshot:
-        _do_display(display, screenshot)
+        _do_display(display, screenshot, dither_levels=dither_levels)
 
-def do_imgurl_display(display, imgurl, fill, scale):
+def do_imgurl_display(display, imgurl, fill, scale, dither_levels=0):
     with _fetch_image_from_urlfile(imgurl, display.width, display.height, fill, scale) as screenshot:
-        _do_display(display, screenshot)
+        _do_display(display, screenshot, dither_levels=dither_levels)
 
-def do_file_display(display, path):
+def do_file_display(display, path, dither_levels=0):
     with Image.open(path, 'r') as image:
         padded_image = ImageOps.pad(image, (display.width, display.height), color=(255,255,255), method=Image.Resampling.LANCZOS, centering=(0.5, 0.5))
-        _do_display(display, image)
+        _do_display(display, padded_image, dither_levels=dither_levels)
         
 
 # From https://scipython.com/blog/floyd-steinberg-dithering/
@@ -114,8 +119,10 @@ def get_new_val(old_val, nc):
     into nc values.
 
     """
+    if old_val == 1.0 or old_val == 0.0:
+        return old_val
 
-    return np.round(old_val * (nc - 1)) / (nc - 1)
+    return round(old_val * (nc - 1)) / (nc - 1)
 
 def fs_dither(img, nc):
     """
@@ -126,10 +133,10 @@ def fs_dither(img, nc):
 
     arr = np.array(img, dtype=float) / 255
 
-    for ir in range(img.height):
+    for ir in tqdm(range(img.height)):
         for ic in range(img.width):
             # NB need to copy here for RGB arrays otherwise err will be (0,0,0)!
-            old_val = arr[ir, ic].copy()
+            old_val = arr[ir, ic]
             new_val = get_new_val(old_val, nc)
             arr[ir, ic] = new_val
             err = old_val - new_val
@@ -146,14 +153,34 @@ def fs_dither(img, nc):
     carr = np.array(arr/np.max(arr, axis=(0,1)) * 255, dtype=np.uint8)
     return Image.fromarray(carr)
 
-def _do_display(display, image):
+def _get_thread_img_box(image, threads, thread_number):
+    return (0, int(image.height / threads * thread_number), image.width, image.height if thread_number == threads else int(image.height / threads * (thread_number + 1)))
 
+def _dither_threaded(image, nc, num_threads):
+    threads = []
+    for i in range(num_threads):
+        cropped_image = image.crop(_get_thread_img_box(image, num_threads, i))
+        threads.append(threading.Thread(target=_dither_worker, args=(cropped_image, nc, image, num_threads, i)))
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    return image
+
+
+def _dither_worker(crop_image, nc, result, threads, thread_index):
+    with fs_dither(crop_image, nc) as dithered_image:
+        result.paste(dithered_image, box=_get_thread_img_box(result, threads, thread_index))
+
+def _do_display(display, image, dither_levels=0):
     try:
-        with image.convert('L'):
-            dithered_image = fs_dither(image, 4)
+        with image.convert('L') as image_gs:
+            processed_image = image
+            if dither_levels > 0:
+                processed_image = _dither_threaded(image_gs, dither_levels, multiprocessing.cpu_count()) # floyd steinberg dithering is too slow on raspberry pi even with multithreading
             dims = (display.width, display.height)
-            paste_coords = [dims[i] - dithered_image.size[i] for i in (0,1)]  # align image with bottom of display
-            display.frame_buf.paste(dithered_image, paste_coords)
+            paste_coords = [dims[i] - processed_image.size[i] for i in (0,1)]  # align image with bottom of display
+            display.frame_buf.paste(processed_image, paste_coords)
             display.draw_full(constants.DisplayModes.GC16)
         logging.info('Done!')
         display.epd.sleep()
@@ -167,6 +194,7 @@ def _do_display(display, image):
 
     except Exception as e:
         logging.info(e)
+        traceback.print_exc()
         logging.info('Putting display to sleep...')
         display.epd.sleep()
         exit()

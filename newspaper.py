@@ -99,16 +99,17 @@ def parse_args():
     scale_group = p.add_mutually_exclusive_group()
     scale_group.add_argument('--fill', action='store_true', help='if set, fills entire frame with image with cropping')
     scale_group.add_argument('--scale', type=float, default=1.0, help='if set, starst with fit and scales up image by this factor. The larger dimension will be cropped')
+    p.add_argument('-d', '--dithering', type=int, default=0, help="number of dithering levels. Set to 0 or omit for disabled")
     return p.parse_args()
 
-def create_job(virtual, mirror, rotate, fill, scale):
+def create_job(virtual, mirror, rotate, fill, scale, dithering):
     newspaper = NewspaperUrl()
     def jobfunc():
         logging.info("running job...")
         url = newspaper.getNextNewspaperUrl()
         logging.info("Newspaper url {}".format(url))
         display = display_image_it8951.init_display(virtual, rotate, mirror)
-        display_image_it8951.do_imgurl_display(display, url, fill, scale)
+        display_image_it8951.do_imgurl_display(display, url, fill, scale, dither_levels=dithering)
         
     return jobfunc
 
@@ -116,12 +117,12 @@ def main():
     args = parse_args()
 
     if not args.min and not args.sec:
-        create_job(args.virtual, True, "CCW", args.fill, args.scale)()
+        create_job(args.virtual, True, "CCW", args.fill, args.scale, args.dithering)()
     else:
         if args.min:
-            schedule.every(args.min).minutes.do(create_job(args.virtual, True, "CCW", args.fill, args.scale))
+            schedule.every(args.min).minutes.do(create_job(args.virtual, True, "CCW", args.fill, args.scale, args.dithering))
         elif args.sec:
-            schedule.every(args.sec).seconds.do(create_job(args.virtual, True, "CCW", args.fill, args.scale))
+            schedule.every(args.sec).seconds.do(create_job(args.virtual, True, "CCW", args.fill, args.scale, args.dithering))
 
         logging.info("Starting job runs")
         try:
