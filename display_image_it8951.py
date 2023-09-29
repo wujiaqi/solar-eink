@@ -13,10 +13,11 @@ import capture_page
 import threading
 import multiprocessing
 import math
+from numba import jit
 from tqdm import tqdm
 from IT8951 import constants
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 def parse_args():
@@ -113,6 +114,7 @@ def do_file_display(display, path, dither_levels=0):
         
 
 # From https://scipython.com/blog/floyd-steinberg-dithering/
+@jit(nopython=True)
 def get_new_val(old_val, nc):
     """
     Get the "closest" colour to old_val in the range [0,1] per channel divided
@@ -124,6 +126,7 @@ def get_new_val(old_val, nc):
 
     return round(old_val * (nc - 1)) / (nc - 1)
 
+
 def fs_dither(img, nc):
     """
     Floyd-Steinberg dither the image img into a palette with nc colours per
@@ -132,26 +135,31 @@ def fs_dither(img, nc):
     """
 
     arr = np.array(img, dtype=float) / 255
+    arr_dithered = floyd_steinberg(arr, nc)
 
-    for ir in tqdm(range(img.height)):
-        for ic in range(img.width):
+    carr = np.array(arr_dithered/np.max(arr_dithered, axis=(0,1)) * 255, dtype=np.uint8)
+    return Image.fromarray(carr)
+
+@jit(nopython=True)
+def floyd_steinberg(arr, nc):
+    h, w = arr.shape
+    for ir in range(h):
+        for ic in range(w):
             # NB need to copy here for RGB arrays otherwise err will be (0,0,0)!
             old_val = arr[ir, ic]
             new_val = get_new_val(old_val, nc)
             arr[ir, ic] = new_val
             err = old_val - new_val
             # In this simple example, we will just ignore the border pixels.
-            if ic < img.width - 1:
-                arr[ir, ic+1] += err * 7/16
-            if ir < img.height - 1:
+            if ic < w - 1:
+                arr[ir, ic+1] += err * 0.4375 # right, 7/16
+            if ir < h - 1:
                 if ic > 0:
-                    arr[ir+1, ic-1] += err * 3/16
-                arr[ir+1, ic] += err * 5/16
-                if ic < img.width - 1:
-                    arr[ir+1, ic+1] += err / 16
-
-    carr = np.array(arr/np.max(arr, axis=(0,1)) * 255, dtype=np.uint8)
-    return Image.fromarray(carr)
+                    arr[ir+1, ic-1] += err * 0.1875 # left, down, 3/16
+                arr[ir+1, ic] += err * 0.3125 # down, 5/16
+                if ic < w - 1:
+                    arr[ir+1, ic+1] += err * 0.1875 # right, down, 1/16
+    return arr
 
 def _get_thread_img_box(image, threads, thread_number):
     return (0, int(image.height / threads * thread_number), image.width, image.height if thread_number == threads else int(image.height / threads * (thread_number + 1)))
