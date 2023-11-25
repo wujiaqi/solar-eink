@@ -2,7 +2,7 @@ Pillow>=10.1.0
 pyppeteer==1.0.2
 requests>=2.31.0
 schedule==1.2.0
-IT8951 @ git+https://github.com/GregDMeyer/IT8951.git@67215164a7fc471bc6904f72ad55e51030905a97#subdirectory=./
+IT8951 @ git+https://github.com/GregDMeyer/IT8951.git@9f136139378f74e17d9972d7165dc6ae53a2568e#subdirectory=./
 waveshare-epaper==1.2.0
 RPi.GPIO==0.7.1
 numpy==1.25.2
